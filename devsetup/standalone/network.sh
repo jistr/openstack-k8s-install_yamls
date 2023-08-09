@@ -110,3 +110,13 @@ sudo ip addr add 172.17.0.2/32 dev vlan20
 sudo ip addr add 172.18.0.2/32 dev vlan21
 sudo ip addr add 172.20.0.2/32 dev vlan23
 sudo ip addr add 172.21.0.2/32 dev vlan44
+
+# Speed up DNS lookups by avoiding CRC's DNS being queried first
+# (which slows down queries by a lot). Query the external DNS first
+# instead. This significantly speeds up the deployment of Standalone,
+# the "manage firewall" step goes from taking more than 1 hour to less
+# than 1 minute. The standalone installer will reconfigure DNS again,
+# so this workaround does not persist beyond the install step.
+if [ -n "$HOST_PRIMARY_RESOLV_CONF_ENTRY" ]; then
+    sed -i -E "/^nameserver/i $HOST_PRIMARY_RESOLV_CONF_ENTRY" /etc/resolv.conf
+fi

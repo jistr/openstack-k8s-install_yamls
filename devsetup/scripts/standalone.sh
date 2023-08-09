@@ -27,6 +27,11 @@ REPO_SETUP_CMDS=${REPO_SETUP_CMDS:-"/tmp/standalone_repos"}
 CMDS_FILE=${CMDS_FILE:-"/tmp/standalone_cmds"}
 SKIP_TRIPLEO_REPOS=${SKIP_TRIPLEO_REPOS:="false"}
 CLEANUP_DIR_CMD=${CLEANUP_DIR_CMD:-"rm -Rf"}
+if [[ -e /run/systemd/resolve/resolv.conf ]]; then
+    HOST_PRIMARY_RESOLV_CONF_ENTRY=$(cat /run/systemd/resolve/resolv.conf | grep ^nameserver | grep -v '192.168' | head -n1)
+else
+    HOST_PRIMARY_RESOLV_CONF_ENTRY=$(cat /etc/resolv.conf | grep ^nameserver | grep -v '192.168' | head -n1)
+fi
 
 if [[ ! -f $SSH_KEY_FILE ]]; then
     echo "$SSH_KEY_FILE is missing"
@@ -72,6 +77,7 @@ export INTERFACE_MTU=${INTERFACE_MTU:-1500}
 export NTP_SERVER=${NTP_SERVER:-"clock.corp.redhat.com"}
 export EDPM_COMPUTE_CEPH_ENABLED=${EDPM_COMPUTE_CEPH_ENABLED:-true}
 export CEPH_ARGS=${CEPH_ARGS:-\"-e \$HOME/deployed_ceph.yaml -e /usr/share/openstack-tripleo-heat-templates/environments/cephadm/cephadm-rbd-only.yaml\"}
+export HOST_PRIMARY_RESOLV_CONF_ENTRY="${HOST_PRIMARY_RESOLV_CONF_ENTRY:-}"
 
 /tmp/network.sh
 [[ "\$EDPM_COMPUTE_CEPH_ENABLED" == "true" ]] && /tmp/ceph.sh
